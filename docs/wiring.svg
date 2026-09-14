@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 390" width="760" height="390" font-family="sans-serif" font-size="13">
+  <rect width="760" height="390" fill="#fff"/>
+  <!-- panel edge connector -->
+  <text x="40" y="34" font-weight="bold">Panel edge connector (front view)</text>
+  <rect x="40" y="50" width="180" height="120" rx="6" fill="#f6c343" stroke="#333"/>
+  <g stroke="#333" fill="#c9c9c9">
+    <rect x="70" y="80" width="30" height="70"/>
+    <rect x="115" y="80" width="30" height="70"/>
+    <rect x="160" y="80" width="30" height="70"/>
+  </g>
+  <g text-anchor="middle" font-size="12">
+    <text x="85" y="70">1</text><text x="130" y="70">2</text><text x="175" y="70">3</text>
+    <text x="85" y="190" fill="#b00000" font-weight="bold">+42 V</text>
+    <text x="130" y="190">GND</text>
+    <text x="175" y="190" font-weight="bold">DATA</text>
+    <text x="175" y="206" font-size="11">3.3 V logic</text>
+  </g>
+
+  <!-- wiring -->
+  <text x="320" y="34" font-weight="bold">Bus master wiring (open drain)</text>
+  <rect x="320" y="60" width="150" height="150" rx="8" fill="#eef3f8" stroke="#333"/>
+  <text x="395" y="84" text-anchor="middle" font-weight="bold">ESP32</text>
+  <text x="330" y="118">GND</text>
+  <text x="330" y="150">GPIO16 RX</text>
+  <text x="330" y="182">GPIO17 TX</text>
+  <text x="330" y="205" font-size="10" fill="#555">TX pad driver = open drain</text>
+  <!-- wires -->
+  <g stroke="#333" stroke-width="2" fill="none">
+    <polyline points="470,113 650,113 650,145 700,145"/>
+    <polyline points="470,145 560,145 560,177"/>
+    <line x1="470" y1="177" x2="700" y2="177"/>
+    <!-- pull-up -->
+    <line x1="620" y1="177" x2="620" y2="200"/>
+    <rect x="610" y="200" width="20" height="40" fill="#fff"/>
+    <line x1="620" y1="240" x2="620" y2="262"/>
+  </g>
+  <circle cx="560" cy="177" r="3"/><circle cx="620" cy="177" r="3"/>
+  <text x="634" y="224">1–2 kΩ</text>
+  <text x="620" y="278" text-anchor="middle" font-weight="bold">+3.3 V</text>
+  <!-- panel side, same pad order as the connector on the left -->
+  <rect x="700" y="90" width="40" height="110" rx="4" fill="#f6c343" stroke="#333"/>
+  <text x="720" y="82" text-anchor="middle" font-size="11">panel</text>
+  <text x="708" y="118" fill="#b00000" font-size="11">42 V</text>
+  <text x="708" y="150">GND</text>
+  <text x="708" y="182" font-weight="bold">DATA</text>
+
+  <text x="320" y="305" font-size="12">UART 1 000 000 baud, 8N1, single wire, half duplex.</text>
+  <text x="320" y="323" font-size="12">A push-pull TX holds the line high and the panel can never answer.</text>
+  <text x="320" y="341" font-size="12">Leave the 42 V pad unconnected; power the panels from their own supply.</text>
+  <text x="40" y="305" font-size="12" fill="#b00000">Pad 1 carries 42 V next to</text>
+  <text x="40" y="323" font-size="12" fill="#b00000">3.3 V logic — check the pad</text>
+  <text x="40" y="341" font-size="12" fill="#b00000">order before wiring.</text>
+  <text x="40" y="375" font-size="11" fill="#555">PROTOCOL.md §3 — MIT</text>
+</svg>

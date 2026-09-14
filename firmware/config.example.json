@@ -1,0 +1,10 @@
+{
+  "wifi": {"ssid": "your-network", "key": "your-password"},
+  "uart": {"tx": 17, "rx": 16},
+  "ddp_port": 4048,
+  "e131_port": 5568,
+  "e131_universe": 1,
+  "e131_channels_per_panel": 3,
+  "http_port": 80,
+  "brightness": 255
+}

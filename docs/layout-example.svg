@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-53.5 -116.7 308.0 214.1" width="924" height="642">
+<g transform="scale(1,-1)" stroke="#333" stroke-width="1" fill="#f6c343">
+<polygon points="-0.0,-77.4 33.5,-19.3 -33.5,-19.3"/>
+<polygon points="67.0,-77.4 33.5,-19.3 0.0,-77.4"/>
+<polygon points="167.5,-19.3 234.5,96.7 100.5,96.7"/>
+<polygon points="134.0,38.7 100.5,-19.3 167.5,-19.3"/>
+<polygon points="167.5,-19.3 100.5,-19.3 134.0,-77.4"/>
+<polygon points="67.0,-77.4 134.0,-77.4 100.5,-19.3"/>
+<polygon points="100.5,-19.3 33.5,-19.3 67.0,-77.4"/>
+<polygon points="100.5,-19.3 67.0,38.7 33.5,-19.3"/>
+<polygon points="67.0,38.7 100.5,-19.3 134.0,38.7"/>
+<polygon points="67.0,38.7 134.0,38.7 100.5,96.7"/>
+<polygon points="33.5,96.7 67.0,38.7 100.5,96.7"/>
+<polygon points="0.0,38.7 67.0,38.7 33.5,96.7"/>
+<polygon points="67.0,38.7 -0.0,38.7 33.5,-19.3"/>
+<polygon points="33.5,-19.3 0.0,38.7 -33.5,-19.3"/>
+<circle cx="0.0" cy="-19.3" r="2" fill="#c00" stroke="none"/>
+<circle cx="50.2" cy="-48.4" r="2" fill="#c00" stroke="none"/>
+<circle cx="150.8" cy="9.7" r="2" fill="#c00" stroke="none"/>
+<circle cx="134.0" cy="-19.3" r="2" fill="#c00" stroke="none"/>
+<circle cx="117.2" cy="-48.4" r="2" fill="#c00" stroke="none"/>
+<circle cx="83.8" cy="-48.4" r="2" fill="#c00" stroke="none"/>
+<circle cx="67.0" cy="-19.3" r="2" fill="#c00" stroke="none"/>
+<circle cx="83.8" cy="9.7" r="2" fill="#c00" stroke="none"/>
+<circle cx="100.5" cy="38.7" r="2" fill="#c00" stroke="none"/>
+<circle cx="83.8" cy="67.7" r="2" fill="#c00" stroke="none"/>
+<circle cx="50.2" cy="67.7" r="2" fill="#c00" stroke="none"/>
+<circle cx="33.5" cy="38.7" r="2" fill="#c00" stroke="none"/>
+<circle cx="16.8" cy="9.7" r="2" fill="#c00" stroke="none"/>
+<circle cx="-16.8" cy="9.7" r="4" fill="#2a2" stroke="none"/>
+<circle cx="16.8" cy="67.7" r="4" fill="none" stroke="#06c" stroke-width="1.5"/>
+</g>
+<text x="-0.0" y="38.7" font-size="12" text-anchor="middle" dominant-baseline="middle" font-family="sans-serif">0</text>
+<text x="33.5" y="58.0" font-size="12" text-anchor="middle" dominant-baseline="middle" font-family="sans-serif">1</text>
+<text x="167.5" y="-58.0" font-size="12" text-anchor="middle" dominant-baseline="middle" font-family="sans-serif">2</text>
+<text x="134.0" y="0.0" font-size="12" text-anchor="middle" dominant-baseline="middle" font-family="sans-serif">3</text>
+<text x="134.0" y="38.7" font-size="12" text-anchor="middle" dominant-baseline="middle" font-family="sans-serif">4</text>
+<text x="100.5" y="58.0" font-size="12" text-anchor="middle" dominant-baseline="middle" font-family="sans-serif">5</text>
+<text x="67.0" y="38.7" font-size="12" text-anchor="middle" dominant-baseline="middle" font-family="sans-serif">6</text>
+<text x="67.0" y="-0.0" font-size="12" text-anchor="middle" dominant-baseline="middle" font-family="sans-serif">7</text>
+<text x="100.5" y="-19.3" font-size="12" text-anchor="middle" dominant-baseline="middle" font-family="sans-serif">8</text>
+<text x="100.5" y="-58.0" font-size="12" text-anchor="middle" dominant-baseline="middle" font-family="sans-serif">9</text>
+<text x="67.0" y="-77.4" font-size="12" text-anchor="middle" dominant-baseline="middle" font-family="sans-serif">10</text>
+<text x="33.5" y="-58.0" font-size="12" text-anchor="middle" dominant-baseline="middle" font-family="sans-serif">11</text>
+<text x="33.5" y="-19.3" font-size="12" text-anchor="middle" dominant-baseline="middle" font-family="sans-serif">12</text>
+<text x="0.0" y="-0.0" font-size="12" text-anchor="middle" dominant-baseline="middle" font-family="sans-serif">13</text>
+</svg>

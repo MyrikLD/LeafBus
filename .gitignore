@@ -1,0 +1,9 @@
+config.json
+firmware/config.json
+wifi.json
+__pycache__/
+*.pyc
+.venv*/
+.pytest_cache/
+layout.json
+layout.svg
