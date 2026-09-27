@@ -11,14 +11,16 @@ never stalls the frame stream.
     GET /off           all panels black
 """
 import socket
+
 import ujson
+
 import geometry
 
 
 class WebServer:
     def __init__(self, bus, port=80, sources=None):
         self.bus = bus
-        self.sources = sources or {}      # {'ddp': receiver, 'e131': receiver}
+        self.sources = sources or {}  # {'ddp': receiver, 'e131': receiver}
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.sock.bind(('0.0.0.0', port))
@@ -54,9 +56,11 @@ class WebServer:
 
     def state(self):
         raw = self.bus.bulk_pull() or b''
-        d = {'panels': self.bus.npanels,
-             'touch': [raw[i] for i in range(0, len(raw) - 1, 2)],
-             'hotplug': len(raw) > 2 * self.bus.npanels,
+        n = self.bus.npanels
+        status = [raw[i] for i in range(0, 2 * n, 2)] if len(raw) >= 2 * n else []
+        d = {'panels': n,
+             'touch': status[::-1],
+             'hotplug': len(raw) > 2 * n,
              'raw': raw.hex()}
         for name, src in self.sources.items():
             d[name + '_frames'] = src.frames

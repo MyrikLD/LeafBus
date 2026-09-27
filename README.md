@@ -12,7 +12,8 @@ pushes color frames at up to
 ~16 frames per second from MicroPython. The assembly then appears on the network as a pixel sink for DDP and E1.31/sACN,
 so any lighting software — xLights, LedFx, Hyperion, WLED sync, a few lines of Python — can play on it. The protocol
 itself is documented in [`PROTOCOL.md`](PROTOCOL.md); this repository is its **reference implementation**: written for
-correctness and readability, not for speed.
+correctness and readability, not for speed. The frame rate is the interpreter's limit, not the bus's: a C implementation
+runs the same bus at 40 frames per second.
 
 ## Status
 
@@ -103,6 +104,11 @@ anim.rainbow(bus)
 | `tools/leafbus.py` | host tool, talks to the board over IP: `layout`, `identify`, `send`, `rainbow`                                                                                                                                                                |
 | `tests/`           | layout string parser and geometry, `python -m pytest`                                                                                                                                                                                         |
 | `docs/`            | diagrams                                                                                                                                                                                                                                      |
+
+## Thanks
+
+To [Cptmeme](https://github.com/Cptmeme) for checking `PROTOCOL.md` against their own
+[Nanoleaf-Shapes-controller](https://github.com/Cptmeme/Nanoleaf-Shapes-controller)
 
 ## Licences
 

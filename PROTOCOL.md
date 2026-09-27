@@ -12,12 +12,13 @@ documentation, source code or confidential material was used, and no protected m
 
 ## 1. Scope
 
-|                                  |                                                                                                                                                                                       |
-|----------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Panels                           | Nanoleaf **Shapes Mini Triangle** (NL48) and **Shapes Triangle** (NL47), 13 + 1 panels in one assembly. Shapes Hexagon (NL42) geometry is given but untested — no unit was available. |
-| Bus master used for verification | ESP32-D0WD-V3, MicroPython v1.29.0, `firmware/` in this repository                                                                                                                    |
-| Covered                          | physical layer, framing, enumeration, color and brightness, touch events, layout string grammar and the geometry derived from it, hot-plug detection                                  |
-| Deliberately not covered         | panel firmware update (`FE flood`), assignment of per-panel short ids, multi-zone panels (Elements, Lines, Canvas), the Rhythm module, the controller's own Wi-Fi API                 |
+|                                  |                                                                                                                                                                                                             |
+|----------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Panels                           | Nanoleaf **Shapes Mini Triangle** (NL48) and **Shapes Triangle** (NL47), 13 + 1 panels in one assembly. Shapes Hexagon (NL42) geometry is given but untested — no unit was available.                       |
+| Bus master used for verification | ESP32-D0WD-V3, MicroPython v1.29.0, `firmware/` in this repository                                                                                                                                          |
+| Independent verification         | 9 Mini Triangles in chain, fork and ring arrangements, ESP32-C5 with a buffered interface: [Cptmeme's protocol notes][cpt]. Findings taken from there are credited inline ([Cptmeme][cpt]); see section 11. |
+| Covered                          | physical layer, framing, enumeration, color and brightness, touch events, layout string grammar and the geometry derived from it, hot-plug detection                                                        |
+| Deliberately not covered         | panel firmware update (`FE flood`), assignment of per-panel short ids, multi-zone panels (Elements, Lines, Canvas), the Rhythm module, the controller's own Wi-Fi API                                       |
 
 ## 2. Minimal working sequence
 
@@ -33,7 +34,8 @@ From "panels powered" to "panels lit in a color of your choice":
 5. Send `FC 04 FF` — brightness 255. No reply.
 6. Send `E0 03` followed by N chunks of `05 01 R G B W` — one chunk per panel. No reply.
 7. From now on send `C0` every **50 ms** and read the 2·N reply bytes. Without this poll the panels apply the first
-   color frame and ignore the next ones.
+   color frame and ignore the next ones. The pairs come in **layout-string order**, the opposite of the chunks in step 6
+   (section 5.3).
 
 Repeat step 6 whenever the colors change. Steps 3–4 are needed again only after a panel is added, removed or moved
 (section 8, `CC`).
@@ -81,6 +83,10 @@ flowchart LR
     V33 --- R --- DATA
     GNDE --- GNDP
 ```
+
+With a buffered tri-state interface the panels themselves hold DATA high on an idle bus and no pull-up was needed
+([Cptmeme][cpt]). Whether that is enough for an open-drain master is not verified; the external pull-up below is what
+the reference build uses.
 
 The pull-up must be external and strong: an internal ~45 kΩ pull-up cannot give clean edges at 1 Mbaud. Verify by
 transmitting `55 AA 55 AA 0F F0` and comparing the echo — 20 of 20 clean echoes means the line is usable.
@@ -137,6 +143,9 @@ Reply latency grows with the hop count because every panel relays the bus (secti
 | bulk pull            | 40 ms + 20 ms × N                                              |
 | node GET (`F8 … 8x`) | 400 ms for the far end of a 4-panel chain; 120 ms is too short |
 
+The bus is not the bottleneck: color frames at up to 40 per second with `C0` every 50 ms run without dropouts
+([Cptmeme][cpt]). The ~16 frames per second of `firmware/` are the limit of the MicroPython interpreter.
+
 Two obligations of the master:
 
 * **Keep polling.** Without `C0` polls the panels apply only the first color frame and ignore the following ones.
@@ -174,14 +183,26 @@ than once and accept a string that repeats.
 
 ### 5.3 Panel index and chunk order
 
-Panels are addressed positionally in `bulk push` and `bulk pull`: index *i*
-is the *i*-th chunk of the push frame and the *i*-th pair of the pull reply. **Index order is the reverse of node order
-in the layout string**: the panel attached to the master is the first node of the string and receives the **last**
-chunk.
+Panels are addressed positionally in `bulk push` and `bulk pull`, but **the two frames use opposite orders**
+([Cptmeme][cpt]):
+
+| frame            | order                            | first entry                      |
+|------------------|----------------------------------|----------------------------------|
+| `E0` push chunks | **reverse** of the layout string | the last panel of the string     |
+| `C0` pull pairs  | **same as** the layout string    | the panel attached to the master |
+
+Positions count panel nodes only; the power supply node `95` has neither a chunk nor a pair. With *p* the position of a
+panel in the layout string:
 
 ```
-chunk(i) = N − 1 − position_in_layout_string(i)
+chunk index = N − 1 − p
+pair index  = p
 ```
+
+The pull order is the depth-first order of the string, not breadth-first: with the master on a middle panel of a fork,
+every panel's pair matched its string position, which breadth-first order would have swapped between the branches. It
+holds across power cycles and with the master moved to the other end of a chain. On a symmetric assembly the two orders
+are easy to confuse; touch a panel at one end to tell them apart.
 
 ### 5.4 Node addressing (`F8`)
 
@@ -253,14 +274,27 @@ for others). A Shapes Triangle has six connectors but **one zone** and uses the 
 
 ### 6.3 Bulk pull (`C0`) — status and touch
 
-`C0` → 2 bytes per panel, in chunk order.
+`C0` → 2 bytes per panel, in **layout-string order** (section 5.3), not chunk order.
 
-| pair              | meaning                                                               |
-|-------------------|-----------------------------------------------------------------------|
-| `00 00`           | idle, no touch                                                        |
-| `10 00`           | first poll after enumeration                                          |
-| `11 00` … `17 00` | touch event; the low nibble varies with the gesture                   |
-| trailing `CC`     | **hot-plug**: the set of panels changed since enumeration (section 8) |
+The first byte of a pair is a status byte made of independent bits:
+
+| value         | meaning                                                                                     |
+|---------------|---------------------------------------------------------------------------------------------|
+| `00`          | idle, no touch                                                                              |
+| `10`          | first poll after enumeration, and the first poll after a touch is released ([Cptmeme][cpt]) |
+| `11` … `17`   | touch; the low nibble varies with the gesture                                               |
+| `+20`         | bit `0x20`, ORed with the above: `20` idle, `32`/`37` touch, `30` release ([Cptmeme][cpt])  |
+| trailing `CC` | **hot-plug** (section 8)                                                                    |
+
+Bit `0x20` was seen on the panel the power supply is plugged into, which in that setup was also the panel the stock
+controller had used; which of the two it marks is open. It appeared after the panels powered up and was absent after the
+master alone restarted. Test for a touch with
+
+```
+(status & 0x10) && (status & 0x0F)
+```
+
+A comparison against `11`…`17` misses touches on the `0x20` panel.
 
 ## 7. Layout string
 
@@ -386,7 +420,33 @@ connectors of a Triangle side sit where the midpoints of two Mini Triangle sides
 parent's, so the tiling has no gaps and no overlaps.
 
 Verified on a 13 + 1 assembly in several arrangements, including a Triangle in each of its three orientations on one
-linker.
+linker, and independently on a 9-panel ring (section 7.7) ([Cptmeme][cpt]).
+
+#### 7.6.1 Panel-center lattice
+
+Every panel centre produced by these formulas lies on a rectangular lattice with cells of
+
+```
+side_mini / 4  ×  side_mini / (2√3)  =  16.75 × 19.341 mm
+```
+
+for Mini Triangles in either orientation, Triangles and Hexagons alike, as long as the root orientation is a multiple of
+60° ([Cptmeme][cpt]). Dividing `x` and `y` by the cell size therefore gives exact integer coordinates. This is the
+natural way to map an assembly onto a 2D pixel matrix for effects: on a square grid the √3 aspect ratio forces rounding
+and neighboring panels end up unevenly spaced.
+
+### 7.7 Rings
+
+Panels may be connected in a closed loop. The panels break the loop themselves: a ring of six Mini Triangles with three
+more attached enumerated as 9 panels, each exactly once, with the same string on repeated enumerations ([Cptmeme][cpt]).
+The link that was dropped is not part of the tree; the geometry puts its two connectors on the same point.
+
+On one enumeration the first separator of one end of the dropped link read `05` instead of `04`, bit 0 set for the
+connector that closes the ring. A later enumeration of the same ring showed `04`, so this bit cannot be relied on.
+
+```
+B0 B0 B1 04 04 B0 95 04 04 B1 B1 B0 05 04 04 B2 04 B0 04 40
+```
 
 Reference implementation: `firmware/geometry.py` (pure Python, runs on the host and in MicroPython); tests in `tests/`.
 
@@ -395,10 +455,14 @@ Reference implementation: `firmware/geometry.py` (pure Python, runs on the host 
 Panels never initiate traffic. Touch and hot-plug arrive in the `bulk pull`
 reply (section 6.3):
 
-* **Touch.** The panel's pair changes from `00 00` to `1x 00` for the polls during which the panel is touched.
+* **Touch.** The panel's status byte has bit `0x10` and a non-zero low nibble for the polls during which the panel is
+  touched (section 6.3).
   `FC 07 <n>` configures touch reporting; the stock controller sends `FC 07 00` around effect changes.
 * **Hot-plug.** When a panel is added, removed or moved, the reply gains a trailing `CC` after the pairs of the panels
   still present. The master must run `00` + `80` again; the moved panel silently stops applying color until it does.
+* `CC` also follows the first enumeration after the master restarts while the panels stay powered, with no change to the
+  assembly ([Cptmeme][cpt]). A second `00` + `80` clears it. Re-enumerate on every `CC` without trying to tell the
+  causes apart.
 
 ## 9. Quirks and variations
 
@@ -447,7 +511,8 @@ is visibly blue-tinted. Use the `W` byte.
 | **bulk pull**        | `C0` frame; polls status and touch from every panel                                                        |
 | **bulk push**        | `E0 03 …` frame; sets the color of every panel in one frame                                                |
 | **chunk**            | one panel's record inside a bulk push frame, `05 T R G B W` or `01 FF`                                     |
-| **chunk index**      | a panel's position in bulk push/pull, `N − 1 − position in the layout string`                              |
+| **chunk index**      | a panel's position in bulk push, `N − 1 − position in the layout string`                                   |
+| **pair index**       | a panel's position in the bulk pull reply, equal to its position in the layout string                      |
 | **connector**        | one of a panel's edge contacts; a Triangle has two per side                                                |
 | **hop**              | one panel-to-panel relay of a frame                                                                        |
 | **layout detect**    | `80` frame; asks for the layout string                                                                     |
@@ -460,3 +525,5 @@ is visibly blue-tinted. Use the `W` byte.
 | **separator**        | a byte with bit 7 clear in the layout string; advances to the next connector and carries the panel subtype |
 | **skip chunk**       | `01 FF`; leaves a panel's color unchanged in a bulk push                                                   |
 | **zone**             | an independently addressable color region; every Shapes panel has exactly one                              |
+
+[cpt]: https://github.com/Cptmeme/Nanoleaf-Shapes-controller/blob/main/docs/protocol-notes.md
