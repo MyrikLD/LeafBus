@@ -20,7 +20,7 @@ runs the same bus at 40 frames per second.
 | feature                                                        | status                                          |
 |----------------------------------------------------------------|-------------------------------------------------|
 | enumeration, layout string, tree, chunk order                  | ✅                                              |
-| panel coordinates and orientation from the layout string alone | ✅ Mini Triangle and Triangle; Hexagon untested |
+| panel coordinates and orientation from the layout string alone | ✅ Mini Triangle and Triangle; Hexagon layout strings parse, geometry untested |
 | color per panel (RGBW + transition time), brightness           | ✅                                              |
 | touch events, hot-plug detection and re-enumeration            | ✅                                              |
 | DDP and E1.31 receivers, HTTP topology server                  | ✅ E1.31 unicast and multicast                  |

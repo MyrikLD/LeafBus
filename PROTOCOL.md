@@ -17,6 +17,7 @@ documentation, source code or confidential material was used, and no protected m
 | Panels                           | Nanoleaf **Shapes Mini Triangle** (NL48) and **Shapes Triangle** (NL47), 13 + 1 panels in one assembly. Shapes Hexagon (NL42) geometry is given but untested — no unit was available.                       |
 | Bus master used for verification | ESP32-D0WD-V3, MicroPython v1.29.0, `firmware/` in this repository                                                                                                                                          |
 | Independent verification         | 9 Mini Triangles in chain, fork and ring arrangements, ESP32-C5 with a buffered interface: [Cptmeme's protocol notes][cpt]. Findings taken from there are credited inline ([Cptmeme][cpt]); see section 11. |
+| Hexagon layout strings           | Captured from a 30-Hexagon wall with two power supplies by [Christian Panton][panton]; layout string only, credited inline ([Panton][panton]). |
 | Covered                          | physical layer, framing, enumeration, color and brightness, touch events, layout string grammar and the geometry derived from it, hot-plug detection                                                        |
 | Deliberately not covered         | panel firmware update (`FE flood`), assignment of per-panel short ids, multi-zone panels (Elements, Lines, Canvas), the Rhythm module, the controller's own Wi-Fi API                                       |
 
@@ -329,6 +330,7 @@ Observed nodes:
 |---------------------|------|---------|-----------------------------------------|
 | `B0` `B1` `B2`      | 3    | 0/1/2   | Mini Triangle                           |
 | `E1` `E3` `E4` `E5` | 6    | 1/3/4/5 | Triangle                                |
+| `E1` `E4` `E5`      | 6    | 1/4/5   | Hexagon ([Panton][panton])              |
 | `95`                | 1    | —       | power supply (root connector undefined) |
 
 ### 7.2 Grammar
@@ -363,8 +365,8 @@ its meaning was not needed.
 
 ### 7.4 Power supply node
 
-`95` is the power supply. It appears exactly once, and its position in the string tells which panel and which
-**connector** it is plugged into. The stock firmware inserts and removes this node explicitly and uses it to estimate
+`95` is the power supply. It appears once per supply, and its position in the string tells which panel and which
+**connector** it is plugged into. An assembly with two supplies carries two `95` nodes ([Panton][panton]). The stock firmware inserts and removes this node explicitly and uses it to estimate
 the worst-case supply location.
 
 ### 7.5 Worked examples
@@ -391,6 +393,21 @@ A 13 + 1 assembly, Mini Triangles and one Triangle (`E3`, four separators
 
 ```
 B1 B0 04 B2 B2 B0 B1 B1 04 E3 00 02 00 00 04 04 04 B2 04 04 04 B1 B1 B2 04 B1 B1 04 04 04 95 04 40
+```
+
+Four Hexagons and two power supplies, separators `00 01 00 00` ([Panton][panton]):
+
+```
+E5 00 E1 00 01 00 00 E4 00 01 00 00 01 95 00 E5 00 01 00 95 00 00 40
+```
+
+```
+E5 root=5
+  connector 1 → E1 root=1
+    connector 0 → E4 root=4
+  connector 2 → 95               power supply
+  connector 3 → E5 root=5
+    connector 3 → 95             power supply
 ```
 
 ### 7.6 Geometry
@@ -527,3 +544,4 @@ is visibly blue-tinted. Use the `W` byte.
 | **zone**             | an independently addressable color region; every Shapes panel has exactly one                              |
 
 [cpt]: https://github.com/Cptmeme/Nanoleaf-Shapes-controller/blob/main/docs/protocol-notes.md
+[panton]: https://christian.panton.org/posts/nanoleaf-ctrl-pt1-5/
